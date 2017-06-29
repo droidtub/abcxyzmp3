@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Mp3 Downloader</string>
+
+    <string name="loading_splash">Loading</string>
+</resources>
