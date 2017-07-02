@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:met="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/adView"
+        android:layout_centerHorizontal="true">
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/title_text"
+        android:textSize="14sp"
+        android:layout_marginLeft="20dp"
+        android:text="@string/title_text"
+        android:textColor="@color/colorAccent"
+        android:layout_marginTop="5dp"/>
+
+    <com.rengwuxian.materialedittext.MaterialEditText
+        android:id="@+id/search_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="5dp"
+        android:gravity="center_vertical"
+        android:imeOptions="actionSearch"
+        android:maxLines="1"
+        android:textSize="20sp"
+        met:met_baseColor="@color/colorAccent"
+        met:met_textColor="@color/colorTextBlack"
+        met:met_textColorHint="@color/colorTextGrey" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/search_btn"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/action_search"
+        android:textColor="@color/colorTextWhite"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/btn_shape"
+        android:layout_marginRight="5dp"/>
+
+
+
+
+</LinearLayout>

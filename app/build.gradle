@@ -5,6 +5,13 @@ android {
     buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "com.musicdownloader.mp3downloader"
+        android {
+            defaultConfig {
+                manifestPlaceholders = [onesignal_app_id: "25890798-70ba-4d12-98a8-4056c8ac980d",
+                                        // Project number pulled from dashboard, local value is ignored.
+                                        onesignal_google_project_number: "REMOTE"]
+            }
+        }
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
@@ -16,6 +23,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/rxjava.properties'
     }
 }
 
@@ -45,4 +56,6 @@ dependencies {
     compile 'com.github.rahatarmanahmed:circularprogressview:2.5.0'
     //gson
     compile 'com.google.code.gson:gson:2.8.0'
+    //onesignal
+    compile 'com.onesignal:OneSignal:[3.5.3,4.0.0)'
 }

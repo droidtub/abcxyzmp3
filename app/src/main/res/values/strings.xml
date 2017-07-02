@@ -1,5 +1,21 @@
 <resources>
-    <string name="app_name">Mp3 Downloader</string>
+    <string name="app_name">Mp3 Downloader Pro</string>
+    <string name="title_text">Insert song title</string>
 
     <string name="loading_splash">Loading</string>
+    <string name="action_ok">Ok</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_later">Later</string>
+    <string name="action_search">Download song</string>
+
+    <string name="interstitial_id_key">interstitial_id_1</string>
+    <string name="native_id_key">native_id_2</string>
+    <string name="banner_id_key">banner_id_3</string>
+    <string name="intro_key">intro_content</string>
+    <string name="browser_btn_key">browser_btn</string>
+    <string name="yt_key">yt</string>
+    <string name="country_key">country_code</string>
+
+    <string name="progress_dialog">Searching</string>
+    <string name="please_wait">Please wait while loading</string>
 </resources>

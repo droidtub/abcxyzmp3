@@ -1,13 +1,24 @@
 package com.musicdownloader.mp3downloader;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.musicdownloader.mp3downloader.entity.AdsInfoEntity;
+import com.musicdownloader.mp3downloader.entity.UpdateInfoEntity;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.ButterKnife;
 import io.reactivex.Observable;
@@ -16,38 +27,71 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.Response;
 
 public class SplashActivity extends AppCompatActivity {
+
+    private String updateUrl = "http://tubemate.biz/api/fbvideodownloader.json";
+    private OkHttpClient okHttpClient;
+    private SharedPreferences sharedPreferences;
+    private InterstitialAd mInterstitialAd;
+    private AdRequest adRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         ButterKnife.bind(this);
-        loadAds();
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
-    private void loadAds(){
-        Observable.fromCallable(new Callable<AdsInfoEntity>() {
+    @Override
+    public void onStart(){
+        super.onStart();
+        createOkHttpClient();
+        loadUpdateInfo();
+    }
+
+    private OkHttpClient createOkHttpClient(){
+        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.connectTimeout(60 * 1000, TimeUnit.MILLISECONDS)
+                .readTimeout(60 * 1000, TimeUnit.MILLISECONDS);
+
+        okHttpClient = builder.build();
+        return okHttpClient;
+    }
+
+    private void loadUpdateInfo(){
+        final Request request = new Request.Builder()
+                .url(updateUrl)
+                .build();
+
+        Observable.fromCallable(new Callable<UpdateInfoEntity>() {
             @Override
-            public AdsInfoEntity call() throws Exception {
+            public UpdateInfoEntity call() throws Exception {
                 Gson gson = new GsonBuilder().create();
                 Response response = okHttpClient.newCall(request).execute();
-                AdsInfoEntity entity = gson.fromJson(response.body().charStream(), AdsInfoEntity.class);
+                UpdateInfoEntity entity = gson.fromJson(response.body().charStream(), UpdateInfoEntity.class);
+                return entity;
             }
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<AdsInfoEntity>() {
+                .subscribe(new Observer<UpdateInfoEntity>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(@NonNull AdsInfoEntity adsInfoEntity) {
-
+                    public void onNext(@NonNull UpdateInfoEntity updateInfoEntity) {
+                        saveAdsInfo(updateInfoEntity);
+                        loadAds(updateInfoEntity.interstitial_ads);
+                        if(updateInfoEntity.update == true) {
+                            showUpdateDialog(updateInfoEntity);
+                        }
                     }
 
                     @Override
@@ -62,5 +106,90 @@ public class SplashActivity extends AppCompatActivity {
                 });
     }
 
+    private void saveAdsInfo(UpdateInfoEntity entity){
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(getString(R.string.interstitial_id_key), entity.interstitial_ads);
+        editor.putString(getString(R.string.native_id_key), entity.native_large_ads);
+        editor.putString(getString(R.string.banner_id_key), entity.banner_ads);
+        editor.putString(getString(R.string.intro_key), entity.guide);
+        editor.putString(getString(R.string.browser_btn_key), entity.browse);
+        editor.putBoolean(getString(R.string.yt_key), entity.yt);
 
+        String countries = new Gson().toJson(entity.country);
+        editor.putString(getString(R.string.country_key), countries);
+        editor.apply();
+    }
+
+    private void loadAds(String adsId){
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId(adsId);
+        adRequest = new AdRequest.Builder()
+                .addTestDevice("YOUR_DEVICE_HASH")
+                .build();
+
+        mInterstitialAd.loadAd(adRequest);
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                showSearchActivity();
+            }
+
+            @Override
+            public void onAdFailedToLoad(int i) {
+                super.onAdFailedToLoad(i);
+                showSearchActivity();
+            }
+
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                mInterstitialAd.show();
+            }
+        });
+    }
+
+    private void showSearchActivity(){
+        startActivity(new Intent(this, SearchActivity.class));
+        finish();
+    }
+
+    private void showUpdateDialog(final UpdateInfoEntity entity){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle(entity.update_title)
+                .setMessage(entity.update_message);
+
+        if(entity.update_cancelable){
+            builder.setPositiveButton(getResources().getText(R.string.action_ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int i) {
+                    showPlayStore(entity.update_link);
+                }
+            })
+                    .setNegativeButton(getResources().getText(R.string.action_later), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int i) {
+                            dialog.dismiss();
+                        }
+                    });
+        } else {
+            builder.setPositiveButton(getResources().getText(R.string.action_ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    showPlayStore(entity.update_link);
+                }
+            });
+        }
+
+        Dialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showPlayStore(String url){
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+        } catch (android.content.ActivityNotFoundException e){
+            e.printStackTrace();
+        }
+    }
 }
