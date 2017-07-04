@@ -47,7 +47,7 @@ import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 public class SplashActivity extends AppCompatActivity {
-    private String updateUrl = "https://footballcrazy255.files.wordpress.com/2017/07/mp3_downloader_config2.doc";
+    private String updateUrl = "https://footballcrazy255.files.wordpress.com/2017/07/mp3_config1.doc";
     private OkHttpClient okHttpClient;
     private SharedPreferences sharedPreferences;
     private InterstitialAd mInterstitialAd;
@@ -132,14 +132,10 @@ public class SplashActivity extends AppCompatActivity {
     private void saveAdsInfo(UpdateInfoEntity entity){
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(getString(R.string.interstitial_id_key), entity.interstitial_ads);
-        editor.putString(getString(R.string.native_id_key), entity.native_large_ads);
         editor.putString(getString(R.string.banner_id_key), entity.banner_ads);
-        editor.putString(getString(R.string.intro_key), entity.guide);
-        editor.putString(getString(R.string.browser_btn_key), entity.browse);
-        editor.putBoolean(getString(R.string.yt_key), entity.yt);
-
-        String countries = new Gson().toJson(entity.country);
-        editor.putString(getString(R.string.country_key), countries);
+        editor.putString(getString(R.string.update_link_key), entity.update_link);
+        editor.putString(getString(R.string.update_title_key), entity.update_title);
+        editor.putString(getString(R.string.update_message_key), entity.update_message);
         editor.apply();
     }
 

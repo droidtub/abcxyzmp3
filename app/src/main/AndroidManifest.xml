@@ -22,6 +22,7 @@
         </activity>
 
         <activity android:name=".SearchActivity"/>
+        <meta-data android:name="com.onesignal.NotificationOpened.DEFAULT" android:value="DISABLE" />
     </application>
 
 </manifest>
