@@ -91,15 +91,12 @@ public class SplashActivity extends AppCompatActivity {
                 Gson gson = new GsonBuilder().create();
                 Response response = okHttpClient.newCall(request).execute();
                 InputStream in = response.body().byteStream();
-                Log.d("han.hanh", in.toString());
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
                 String result, line = reader.readLine();
                 result = line;
-
                 while((line = reader.readLine()) != null){
                     result += line;
                 }
-                Log.d("han.hanh", result);
                 UpdateInfoEntity entity = gson.fromJson(result, UpdateInfoEntity.class);
                 return entity;
             }
@@ -115,7 +112,6 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void onNext(@NonNull UpdateInfoEntity updateInfoEntity) {
                         saveAdsInfo(updateInfoEntity);
-                        Log.d("han.hanh", updateInfoEntity.interstitial_ads);
                         loadAds(updateInfoEntity.interstitial_ads);
                         if(updateInfoEntity.update == true) {
                             showUpdateDialog(updateInfoEntity);
@@ -124,7 +120,6 @@ public class SplashActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-                        Log.d("han.hanh", e.toString());
                     }
 
                     @Override
