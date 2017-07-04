@@ -5,10 +5,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -17,6 +19,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.musicdownloader.mp3downloader.entity.UpdateInfoEntity;
 
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -30,10 +44,10 @@ import io.reactivex.schedulers.Schedulers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 public class SplashActivity extends AppCompatActivity {
-
-    private String updateUrl = "http://tubemate.biz/api/fbvideodownloader.json";
+    private String updateUrl = "https://footballcrazy255.files.wordpress.com/2017/07/mp3_downloader_config2.doc";
     private OkHttpClient okHttpClient;
     private SharedPreferences sharedPreferences;
     private InterstitialAd mInterstitialAd;
@@ -56,6 +70,9 @@ public class SplashActivity extends AppCompatActivity {
 
     private OkHttpClient createOkHttpClient(){
         final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        builder.addInterceptor(logging);
         builder.connectTimeout(60 * 1000, TimeUnit.MILLISECONDS)
                 .readTimeout(60 * 1000, TimeUnit.MILLISECONDS);
 
@@ -73,7 +90,17 @@ public class SplashActivity extends AppCompatActivity {
             public UpdateInfoEntity call() throws Exception {
                 Gson gson = new GsonBuilder().create();
                 Response response = okHttpClient.newCall(request).execute();
-                UpdateInfoEntity entity = gson.fromJson(response.body().charStream(), UpdateInfoEntity.class);
+                InputStream in = response.body().byteStream();
+                Log.d("han.hanh", in.toString());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                String result, line = reader.readLine();
+                result = line;
+
+                while((line = reader.readLine()) != null){
+                    result += line;
+                }
+                Log.d("han.hanh", result);
+                UpdateInfoEntity entity = gson.fromJson(result, UpdateInfoEntity.class);
                 return entity;
             }
         })
@@ -88,6 +115,7 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void onNext(@NonNull UpdateInfoEntity updateInfoEntity) {
                         saveAdsInfo(updateInfoEntity);
+                        Log.d("han.hanh", updateInfoEntity.interstitial_ads);
                         loadAds(updateInfoEntity.interstitial_ads);
                         if(updateInfoEntity.update == true) {
                             showUpdateDialog(updateInfoEntity);
@@ -96,7 +124,7 @@ public class SplashActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
-
+                        Log.d("han.hanh", e.toString());
                     }
 
                     @Override
